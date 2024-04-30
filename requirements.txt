@@ -1,0 +1,14 @@
+numpy
+pandas
+matplotlib
+opencv-python
+streamlit-drawable-canvas 
+torch==2.2
+diffusers 
+transformers 
+accelerate 
+scipy 
+safetensors
+# xformers
+
+
