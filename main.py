@@ -6,6 +6,7 @@ import time
 import shutil
 
 from utils import create_mask, run_inpaint_pipeline
+st.set_page_config(layout="wide")  # Set the page layout to wide
 
 # Specify canvas parameters in application
 drawing_mode = st.sidebar.selectbox(
@@ -24,6 +25,10 @@ realtime_update = st.sidebar.checkbox("Update in realtime", True)
 if bg_image:
     print("bg_image is not None")
     image = Image.open(bg_image)
+    # print("debug 1", image.size)
+    # image = image.resize((1024, 1024), resample=Image.BILINEAR)
+
+
     width, height = image.size
     width = int(width/2)
     height = int(height/2)
@@ -39,21 +44,23 @@ else:
 print(width, height)
 # Create a canvas component
 
+col1, col2 = st.columns([.6, .4])
 
+with col1:
 
-canvas_result = st_canvas(
-    fill_color="rgba(255, 165, 0, 0.3)",  # Fixed fill color with some opacity
-    stroke_width=stroke_width,
-    stroke_color=stroke_color,
-    background_color=bg_color,
-    background_image=temp_image if bg_image else None,
-    update_streamlit=realtime_update,
-    height=height,
-    width = width,
-    drawing_mode=drawing_mode,
-    point_display_radius=point_display_radius if drawing_mode == 'point' else 0,
-    key="canvas",
-)
+    canvas_result = st_canvas(
+        fill_color="rgba(255, 165, 0, 0.3)",  # Fixed fill color with some opacity
+        stroke_width=stroke_width,
+        stroke_color=stroke_color,
+        background_color=bg_color,
+        background_image=temp_image if bg_image else None,
+        update_streamlit=realtime_update,
+        height=height,
+        width = width,
+        drawing_mode=drawing_mode,
+        point_display_radius=point_display_radius if drawing_mode == 'point' else 0,
+        key="canvas",
+    )
 print(type(canvas_result))
 # print('after imgae selection')
 # Do something interesting with the image data and paths
@@ -64,6 +71,65 @@ if canvas_result.json_data is not None:
     for col in objects.select_dtypes(include=['object']).columns:
         objects[col] = objects[col].astype("str")
     st.dataframe(objects)
+
+
+
+def get_response(model, messages = None, stream = None):
+    return "This is response from AI"
+def display_messages():
+    for message in st.session_state.messages:
+        print(message)
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+# with st.container(height=None):
+# custom_css = """
+# <style>
+# /* Target the chat input box */
+# div[data-baseweb="input"] input[type="text"].stTextInput {
+#     padding: 1px 1px !important; /* Adjust padding as needed */
+#     margin: 1px 0 !important; /* Adjust margin as needed */
+# }
+# </style>
+# """
+
+# # Apply custom CSS using st.markdown
+# st.markdown(custom_css, unsafe_allow_html=True)
+with col2:
+    with st.container(height=512):
+
+        if "openai_model" not in st.session_state:
+            st.session_state["openai_model"] = "gpt-3.5-turbo"
+
+        if "messages" not in st.session_state:
+            st.session_state.messages = []
+  
+        display_messages()
+
+        prompt = st.chat_input("What is up?")
+        if st.button("Clear all messages"):
+                st.session_state.messages = []
+
+        if prompt:
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            stream = get_response(
+                model=st.session_state["openai_model"],
+                # messages=[
+                #     {"role": m["role"], "content": m["content"]}
+                #     for m in st.session_state.messages
+                # ],
+                stream=True,
+            )
+            # response = st.write(stream)
+            # with st.chat_message("assistant"):
+            #     st.markdown(stream)
+            st.session_state.messages.append({"role": "assistant", "content": stream})
+            st.experimental_rerun()
+
+
+
+        
+
+
 
 print(objects.columns)
 print(objects.left)
