@@ -107,27 +107,53 @@ with col2:
 
         prompt = st.chat_input("What is up?")
         if st.button("Clear all messages"):
-                st.session_state.messages = []
+            st.session_state.messages = []
+            st.experimental_rerun()
 
+        
         if prompt:
             st.session_state.messages.append({"role": "user", "content": prompt})
-            stream = get_response(
-                model=st.session_state["openai_model"],
-                # messages=[
-                #     {"role": m["role"], "content": m["content"]}
-                #     for m in st.session_state.messages
-                # ],
-                stream=True,
-            )
+
+            stream = "No Model Selected...Getting no response from AI"
+            
+            if st.session_state.current_chosen_model == "dalle_3":
+                stream = "Getting response from Dall E 3"
+            elif st.session_state.current_chosen_model == "sd_2":
+                stream = "Getting response from SD 2"
+            elif st.session_state.current_chosen_model == "sam":
+                stream = "Getting response from SAM"
+
+            # stream = get_response(
+            #     model=st.session_state["openai_model"],
+            #     # messages=[
+            #     #     {"role": m["role"], "content": m["content"]}
+            #     #     for m in st.session_state.messages
+            #     # ],
+            #     stream=True,
+            # )
             # response = st.write(stream)
             # with st.chat_message("assistant"):
             #     st.markdown(stream)
             st.session_state.messages.append({"role": "assistant", "content": stream})
             st.experimental_rerun()
-
-
+        model_name_placeholder_mapping = {"None": "None", "Dall E 3": "dalle_3", "SD 2": "sd_2", "SAM": "sam"}
+        option = st.radio("", ["None", "Dall E 3", "SD 2", "SAM"], format_func=lambda x: x, index=0, horizontal = True, on_change = None)
+        st.session_state.current_chosen_model = model_name_placeholder_mapping[option]
+        if option == "None":
+            st.write("You selected Option 1. Task 1 will be executed.")
+            # Code for Task 1
+        elif option == "Dall E 3":
+            st.write("You selected Option 2. Task 2 will be executed.")
+            # Code for Task 2
+        elif option == "SD 2":
+            st.write("You selected Option 3. Task 3 will be executed.")
+            # Code for Task 3
+        elif option == "SAM":
+            st.write("You selected Option 4. Task 4 will be executed.")
+            # Code for Task 4
 
         
+
 
 
 
